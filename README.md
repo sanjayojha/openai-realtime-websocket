@@ -6,31 +6,27 @@ A fully working demo that connects a web browser directly to the [OpenAI Realtim
 
 ## How It Works
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant A as Astro Server
-    participant O as OpenAI
+- **1. Token exchange** _(Browser -> Astro Server -> OpenAI REST)_
+    - User clicks **Start Speaking** in the browser.
+    - Browser calls the Astro Action, which uses the secret `OPENAI_API_KEY` on the server to request a short lived client secret from the OpenAI REST API.
+    - Server returns the ephemeral token to the browser (the real API key is never exposed).
 
-    B->>A: Click "Start Speaking" — call Astro Action
-    A->>O: REST POST /realtime/client_secrets (API key)
-    O-->>A: Ephemeral token (expires in 5 min)
-    A-->>B: Return ephemeral token
+- **2. WebSocket setup** _(Browser -> OpenAI)_
+    - Browser opens a WebSocket to `wss://api.openai.com/v1/realtime`, authenticating with the ephemeral token.
+    - Browser sends a `session.update` event to configure the session (output voice, transcription model, manual turn detection).
 
-    B->>O: Open WebSocket wss://api.openai.com/v1/realtime (authenticated with ephemeral token)
-    B->>O: session.update (voice, transcription model, turn detection off)
+- **3. Audio streaming capture** _(Browser -> OpenAI)_
+    - Microphone audio is captured at 24 kHz mono via `getUserMedia`.
+    - An `AudioWorklet` processes samples off the main thread, encoding them as base64 PCM16 chunks.
+    - Each chunk is sent to OpenAI as an `input_audio_buffer.append` event.
 
-    loop While mic is active
-        B->>O: input_audio_buffer.append (PCM16 base64 chunks)
-    end
+- **4. Committing the turn** _(Browser -> OpenAI)_
+    - User clicks **Stop Speaking**.
+    - Browser sends `input_audio_buffer.commit` (signals end of speech) followed by `response.create` (requests a response).
 
-    B->>O: Click "Stop Speaking" -> input_audio_buffer.commit + response.create
-
-    O-->>B: response.output_audio.delta (PCM16 audio chunks)
-    O-->>B: response.output_audio_transcript.delta (agent transcript)
-    O-->>B: conversation.item.input_audio_transcription.delta (user transcript)
-    O-->>B: response.output_audio.done
-```
+- **5. Response streaming** _(OpenAI -> Browser)_
+    - OpenAI streams `response.output_audio.delta` events, PCM16 audio chunks decoded and played back seamlessly via Web Audio API.
+    - `response.output_audio_transcript.delta` and `conversation.item.input_audio_transcription.delta` events stream the agent and user transcripts in real time to the UI.
 
 The browser never exposes the real OpenAI API key. The server mints a short-lived token (5 minutes) and hands it to the client. The client opens the WebSocket directly to OpenAI using that token.
 
