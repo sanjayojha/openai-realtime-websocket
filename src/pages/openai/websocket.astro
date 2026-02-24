@@ -1,0 +1,37 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+---
+
+<Layout>
+    <main>
+        <h2>OpenAI Realtime Example with websocket</h2>
+        <div id="connectionStatus" class="d-none">Initializing please wait...</div>
+        <div class="chatSpace">
+
+            <div class="agentSpace">
+                <div id="audioPlayingIndicator" class="d-none">
+                    <div class="audio-wave">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div>Agent is speaking...</div>
+                </div>
+                <div id="agentResponse" class="agentResponse"></div>
+            </div>
+
+            <div class="userSpace">
+                <div id="listening" class="d-none">Listening...</div>
+                <div>
+                     <button id="startRecording" class="btn btn-primary">Start Speaking</button>
+                    <button id="stopRecording" class="btn btn-secondary d-none" disabled>Stop Speaking</button>
+                </div>
+               
+                <div id="userQuery" class="userQuery"></div>
+            </div>
+
+        </div>
+
+        <button id="closeConnection" class="btn btn-secondary" disabled>Close Session</button>
+    </main>
+    <script src="../../scripts/websocket.ts"></script>
+</Layout>
