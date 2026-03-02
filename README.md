@@ -2,6 +2,10 @@
 
 A fully working demo that connects a web browser directly to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime) over a WebSocket using a short-lived **ephemeral token**. The server side is handled by **Astro.js** (on-demand rendering + Astro Actions). Everything else for example like microphone capture, audio processing, and playback is pure client side code built on modern browser APIs.
 
+Check my other repository to see [OpenAI realtime with WebRTC](https://github.com/sanjayojha/openai-realtime-webrtc) in action with almost similar setup.
+
+I have also written a detailed [guide](https://sanjayojha.dev/blog/openai-realtime-websocket) breaking down the key components with code examples to clear the concept behind the WebSocket approach of OpenAI realtime.
+
 ---
 
 ## How It Works
@@ -144,13 +148,6 @@ npm run dev
 ```
 
 Open [http://localhost:4321](http://localhost:4321).
-
-### Production Build
-
-```bash
-npm run build
-node dist/server/entry.mjs
-```
 
 ---
 
